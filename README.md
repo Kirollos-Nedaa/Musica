@@ -112,7 +112,7 @@ automatically, so the stale-binary YouTube issue cannot occur.
 The image is built from the code in this GitHub repo. After any code change:
 
 1. Commit and push to `main` (or push a `v*` tag). GitHub Actions builds and
-   publishes `ghcr.io/kirollos-nedaa/discord-music-bot`.
+   publishes `ghcr.io/kirollos-nedaa/musica`.
 2. On the server, update the running container:
 
    ```sh

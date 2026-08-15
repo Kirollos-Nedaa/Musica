@@ -1,6 +1,6 @@
 services:
   musica:
-    image: ghcr.io/kirollos-nedaa/discord-music-bot:latest
+    image: ghcr.io/kirollos-nedaa/musica:latest
     container_name: musica
     restart: unless-stopped
     ports:
