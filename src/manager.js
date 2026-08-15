@@ -105,6 +105,8 @@ function handleLogEntry(entry) {
   pushToRing(normalized);
   logFile.write(prettyLine(normalized));
   broadcast({ type: 'log', entry: normalized });
+  const echo = logger[normalized.level] || logger.info;
+  echo.call(logger, `[${normalized.name}] ${normalized.msg}`, normalized.meta || {});
 }
 
 function handleChildOutput(stream, chunk) {

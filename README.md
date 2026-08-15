@@ -135,6 +135,17 @@ You can also trigger a rebuild manually from the **Actions** tab of the repo.
 - To change the dashboard port, edit the left side of `11234:3000` in
   `docker-compose.yml` (e.g. `8080:3000`).
 
+### Troubleshooting in the container
+
+- All bot + ffmpeg logs now also go to stdout, so check the container logs:
+  `docker logs musica --tail 100`.
+- For verbose playback/decode diagnostics set `LOG_LEVEL=debug` in `.env`,
+  recreate the container (`docker compose up -d`), and reproduce the issue.
+  The `[ffmpeg]` lines show exactly why a stream failed (HTTP 403, DNS, etc.).
+- If audio never starts, the bot is usually failing to fetch/transcode the
+  YouTube media stream inside the container. The image already passes a browser
+  User-Agent to ffmpeg; a non-residential/blocked IP is the other common cause.
+
 ## Configuration
 
 | Env var | Default | Purpose |
