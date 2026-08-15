@@ -156,6 +156,9 @@ html, body {
   border: 1px solid var(--border);
 }
 .btn.ghost:hover { background: var(--panel-2); box-shadow: none; }
+.btn.full { width: 100%; }
+.btn.ghost.danger { color: var(--danger); border-color: rgba(242, 80, 78, .35); }
+.btn.ghost.danger:hover { background: rgba(242, 80, 78, .08); }
 .btn.small { padding: 5px 10px; font-size: 12px; border-radius: 7px; }
 
 .icon-btn {

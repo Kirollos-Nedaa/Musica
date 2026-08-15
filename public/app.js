@@ -162,6 +162,8 @@
     jump: 'Jump',
     remove: 'Remove',
     clear: 'Clear queue',
+    disconnect: 'Disconnect',
+    restart: 'Restart',
     shutdown: 'Shutdown',
     status: 'Status',
   };
@@ -233,6 +235,8 @@
       .join('');
     select.disabled = guilds.length === 0;
     renderChannelSelect();
+    const connected = Boolean(selectedGuild()?.voiceChannel);
+    $('btn-disconnect').disabled = !connected;
   }
 
   function renderChannelSelect() {
@@ -584,6 +588,32 @@
     $('btn-clear').addEventListener('click', () => {
       const p = currentPlayer();
       if (p) sendControl('clear', { guildId: p.guildId });
+    });
+
+    $('btn-disconnect').addEventListener('click', () => {
+      const guild = selectedGuild();
+      if (!guild) return toast('No server selected', true);
+      if (!guild.voiceChannel) return toast('The bot is not connected to a voice channel', true);
+      sendControl('disconnect', { guildId: guild.id });
+    });
+
+    let restartArm = false;
+    let restartArmTimer = null;
+    const restartBtn = $('btn-restart');
+    restartBtn.addEventListener('click', () => {
+      if (!restartArm) {
+        restartArm = true;
+        restartBtn.textContent = 'Confirm?';
+        restartArmTimer = setTimeout(() => {
+          restartArm = false;
+          restartBtn.textContent = 'Restart';
+        }, 3000);
+        return;
+      }
+      clearTimeout(restartArmTimer);
+      restartArm = false;
+      restartBtn.textContent = 'Restart';
+      sendControl('restart', {});
     });
 
     let volumeTimer = null;

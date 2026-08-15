@@ -329,6 +329,16 @@ wss.on('connection', (ws) => {
     if (message.type === 'control') {
       const { action, payload = {}, requestId } = message;
       try {
+        if (action === 'restart') {
+          logger.info('Restart requested from the web UI');
+          ws.send(JSON.stringify({ type: 'control:result', action, ok: true, requestId }));
+          if (child && child.connected) {
+            child.kill('SIGTERM');
+          } else {
+            setTimeout(spawnBot, 200);
+          }
+          return;
+        }
         sendControl(action, payload, requestId);
       } catch (err) {
         ws.send(JSON.stringify({ type: 'control:result', action, ok: false, error: err.message, requestId }));

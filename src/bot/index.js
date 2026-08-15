@@ -187,6 +187,7 @@ distube.on('addList', (queue, playlist) => {
   if (queue.textChannel && queue.songs.length > 1) {
     const added = playlist.songs?.length || 0;
     queue.textChannel.send({ embeds: [embeds.playlistAddedEmbed(playlist, added)] }).catch(() => {});
+    queue.textChannel.send({ embeds: [embeds.queueEmbed(queue)] }).catch(() => {});
   }
 });
 
@@ -323,9 +324,6 @@ async function handleControl(action, payload, requestId) {
       if (queue && queue.songs.length > config.maxQueueSize) {
         queue.songs.splice(config.maxQueueSize);
       }
-      if (textChannel && queue) {
-        textChannel.send({ embeds: [embeds.queueEmbed(queue)] }).catch(() => {});
-      }
       send(process, { type: 'control:result', action, ok: true, requestId });
       pushState();
       return;
@@ -385,6 +383,18 @@ async function handleControl(action, payload, requestId) {
       const queue = distube.getQueue(payload.guildId);
       if (!queue) throw new Error('No active queue in this guild');
       queue.songs.splice(1);
+      send(process, { type: 'control:result', action, ok: true, requestId });
+      pushState();
+      return;
+    }
+    case 'disconnect': {
+      const guild = client.guilds.cache.get(payload.guildId);
+      if (!guild) throw new Error('Bot is not in that guild');
+      const queue = distube.getQueue(payload.guildId);
+      const connected = Boolean(guild.members.me?.voice?.channel);
+      if (!queue && !connected) throw new Error('Bot is not connected to a voice channel');
+      if (queue) await queue.stop().catch(() => {});
+      distube.voices.leave(payload.guildId);
       send(process, { type: 'control:result', action, ok: true, requestId });
       pushState();
       return;
