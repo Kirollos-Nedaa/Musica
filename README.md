@@ -50,7 +50,7 @@ The **manager** runs the HTTP server + WebSocket hub, keeps the **bot** alive wi
    SPOTIFY_CLIENT_SECRET=
 
    HOST=0.0.0.0
-   PORT=3000
+   PORT=11234
    ADMIN_PASSWORD=choose-a-strong-password
    ```
 
@@ -64,7 +64,7 @@ The **manager** runs the HTTP server + WebSocket hub, keeps the **bot** alive wi
    npm start
    ```
 
-5. Open the dashboard at `http://localhost:3000` and sign in with `ADMIN_PASSWORD`.
+5. Open the dashboard at `http://localhost:11234` and sign in with `ADMIN_PASSWORD`.
 
 ## Commands
 
@@ -79,7 +79,7 @@ The **manager** runs the HTTP server + WebSocket hub, keeps the **bot** alive wi
 
 The now-playing message includes buttons for **repeat**, **stop**, **pause/resume**, **skip**, **shuffle**, and **previous**.
 
-## Docker (OMV or any Docker host)
+## Docker
 
 The image is published to **GHCR** (GitHub Container Registry) by a GitHub
 Actions workflow, so the server only ever pulls a prebuilt image — no Node.js
@@ -139,7 +139,7 @@ You can also trigger a rebuild manually from the **Actions** tab of the repo.
 
 | Env var | Default | Purpose |
 | --- | --- | --- |
-| `PORT` | `3000` | Dashboard/API port |
+| `PORT` | `11234` | Dashboard/API port |
 | `HOST` | `0.0.0.0` | Bind address |
 | `ADMIN_PASSWORD` | - | Dashboard password |
 | `ADMIN_SESSION_MINUTES` | `1440` | Session TTL |
