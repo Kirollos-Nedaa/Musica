@@ -1,3 +1,5 @@
+const { ChannelType } = require('discord.js');
+
 const songSummary = (song) => {
   if (!song) return null;
   return {
@@ -39,6 +41,10 @@ function buildState(client, distube) {
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
 
+    const textChannels = [...guild.channels.cache.filter((c) => c.type === ChannelType.GuildText || c.type === ChannelType.GuildAnnouncement).values()]
+      .map((c) => ({ id: c.id, name: c.name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
     guilds.push({
       id: guild.id,
       name: guild.name,
@@ -46,6 +52,7 @@ function buildState(client, distube) {
       memberCount: guild.memberCount,
       voiceChannel: voiceChannelSummary(voice),
       voiceChannels,
+      textChannels,
       playing: queue ? songSummary(queue.songs?.[0]) : null,
     });
 

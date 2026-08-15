@@ -65,6 +65,9 @@ function registerHandlers({ client, distube, config, logger }) {
             embeds: [embeds.nowPlayingEmbed(queue.songs[0])],
             components: [embeds.controls1, embeds.controls2],
           });
+        } else if (commandName === 'queue') {
+          if (!isQueue(queue)) return it.reply('🚫 No song is currently playing.');
+          await it.reply({ embeds: [embeds.queueEmbed(queue)] });
         }
       });
     } else if (interaction.isButton()) {

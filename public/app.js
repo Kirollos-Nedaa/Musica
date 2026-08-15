@@ -15,6 +15,7 @@
     lastStateAt: 0,
     statePosition: 0,
     selectedGuildId: null,
+    textChannelChoice: {},
   };
 
   /* ---------- helpers ---------- */
@@ -250,6 +251,24 @@
     if (channels.length === 0) {
       select.innerHTML = '<option value="">no voice channels</option>';
     }
+    renderTextChannelSelect();
+  }
+
+  function renderTextChannelSelect() {
+    const select = $('text-channel-select');
+    const guild = selectedGuild();
+    const channels = guild?.textChannels || [];
+    let value = S.textChannelChoice?.[guild?.id];
+    if (value === undefined) {
+      const p = currentPlayer();
+      value = p && p.textChannel && p.guildId === guild?.id ? p.textChannel.id : '';
+    }
+    select.innerHTML =
+      '<option value="">— none —</option>' +
+      channels
+        .map((c) => `<option value="${c.id}"${c.id === value ? ' selected' : ''}>${escapeHtml(c.name)}</option>`)
+        .join('');
+    select.disabled = channels.length === 0;
   }
 
   function renderGuildList() {
@@ -463,7 +482,8 @@
       const channel = $('channel-select').value;
       if (!guild) return toast('No server selected', true);
       if (!channel) return toast('No voice channel available in this server', true);
-      sendControl('play', { guildId: guild.id, voiceChannelId: channel, query: url });
+      const textChannelId = $('text-channel-select').value || undefined;
+      sendControl('play', { guildId: guild.id, voiceChannelId: channel, query: url, textChannelId });
       $('search-results').hidden = true;
     };
   }
@@ -582,6 +602,11 @@
       renderGuildList();
       renderPlayer();
       renderQueue();
+    });
+
+    $('text-channel-select').addEventListener('change', () => {
+      const guild = selectedGuild();
+      if (guild) S.textChannelChoice[guild.id] = $('text-channel-select').value;
     });
   }
 

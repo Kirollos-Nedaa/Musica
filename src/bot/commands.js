@@ -18,6 +18,7 @@ const commands = [
   { name: 'stop', description: 'Stop the Song' },
   { name: 'skip', description: 'Skips the current Song' },
   { name: 'now-playing', description: 'Shows you what is playing' },
+  { name: 'queue', description: 'Shows the full queue' },
 ];
 
 module.exports = { commands };

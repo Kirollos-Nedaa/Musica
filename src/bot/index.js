@@ -309,15 +309,22 @@ async function handleControl(action, payload, requestId) {
       if (!guild) throw new Error('Bot is not in that guild');
       const voiceChannel = guild.channels.cache.get(payload.voiceChannelId);
       if (!voiceChannel || !voiceChannel.isVoiceBased()) throw new Error('Invalid voice channel');
+      const textChannel = payload.textChannelId
+        ? guild.channels.cache.get(payload.textChannelId)
+        : undefined;
+      if (textChannel && !textChannel.isTextBased()) throw new Error('Invalid text channel');
       const member = guild.members.me;
       await distube.play(voiceChannel, payload.query, {
         member,
-        textChannel: payload.textChannelId ? guild.channels.cache.get(payload.textChannelId) : undefined,
+        textChannel,
         playlist: true,
       });
       const queue = distube.getQueue(payload.guildId);
       if (queue && queue.songs.length > config.maxQueueSize) {
         queue.songs.splice(config.maxQueueSize);
+      }
+      if (textChannel && queue) {
+        textChannel.send({ embeds: [embeds.queueEmbed(queue)] }).catch(() => {});
       }
       send(process, { type: 'control:result', action, ok: true, requestId });
       pushState();
