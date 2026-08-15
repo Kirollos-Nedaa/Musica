@@ -19,18 +19,53 @@ const logger = new Logger({ level: config.logLevel, mode: 'json', name: 'bot' })
 const searchExtractor = new SearchExtractor();
 
 function resolveFfmpegPath() {
-  const pkgPath = require('ffmpeg-static');
-  if (!pkgPath) return 'ffmpeg';
-  if (!/\s/.test(pkgPath)) return pkgPath;
+  const { spawnSync } = require('child_process');
+
+  const probe = (cmd) => {
+    try {
+      const r = spawnSync(cmd, ['-version'], { encoding: 'utf8', timeout: 5000 });
+      if (r.status !== 0) return null;
+      const line = (r.stdout || r.stderr).split(/\r?\n/)[0];
+      return line || cmd;
+    } catch {
+      return null;
+    }
+  };
+
+  const systemVersion = probe('ffmpeg');
+  if (systemVersion) {
+    logger.info(`Using system ffmpeg: ${systemVersion}`);
+    return 'ffmpeg';
+  }
+
+  let pkgPath;
   try {
+    pkgPath = require('ffmpeg-static');
+  } catch {
+    logger.warn('ffmpeg-static unavailable, falling back to PATH');
+    return 'ffmpeg';
+  }
+
+  const copyToSpaceFree = (src) => {
     const destDir = path.join(os.tmpdir(), 'musica-ffmpeg');
-    const dest = path.join(destDir, path.basename(pkgPath));
+    const dest = path.join(destDir, path.basename(src));
     fs.mkdirSync(destDir, { recursive: true });
-    if (!fs.existsSync(dest)) fs.copyFileSync(pkgPath, dest);
-    logger.info(`Copied ffmpeg to space-free path: ${dest}`);
+    if (!fs.existsSync(dest)) fs.copyFileSync(src, dest);
     return dest;
+  };
+
+  try {
+    const finalPath = /\s/.test(pkgPath) ? copyToSpaceFree(pkgPath) : pkgPath;
+    const version = probe(finalPath);
+    if (version) {
+      logger.info(`Using ffmpeg-static: ${finalPath} (${version})`);
+    } else {
+      logger.warn(`ffmpeg-static binary at ${finalPath} failed to run, using PATH lookup`);
+      return 'ffmpeg';
+    }
+    return finalPath;
   } catch (err) {
-    logger.warn('Failed to copy ffmpeg to a space-free path', { error: err.message });
+    logger.warn('Failed to resolve ffmpeg-static path', { error: err.message });
     return pkgPath;
   }
 }

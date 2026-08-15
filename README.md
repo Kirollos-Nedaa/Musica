@@ -142,9 +142,13 @@ You can also trigger a rebuild manually from the **Actions** tab of the repo.
 - For verbose playback/decode diagnostics set `LOG_LEVEL=debug` in `.env`,
   recreate the container (`docker compose up -d`), and reproduce the issue.
   The `[ffmpeg]` lines show exactly why a stream failed (HTTP 403, DNS, etc.).
-- If audio never starts, the bot is usually failing to fetch/transcode the
-  YouTube media stream inside the container. The image already passes a browser
-  User-Agent to ffmpeg; a non-residential/blocked IP is the other common cause.
+- The image installs `ffmpeg` from the Debian repos (with `ffmpeg-static` as
+  fallback) and logs the chosen binary + version at startup, e.g.
+  `Using system ffmpeg: ffmpeg version ...`. Confirm that line appears in
+  `docker logs musica`.
+- If audio still never starts, the bot is failing to fetch the YouTube media
+  stream. The image passes a browser User-Agent to ffmpeg; a
+  non-residential/blocked server IP is the other common cause.
 
 ## Configuration
 

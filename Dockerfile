@@ -1,4 +1,4 @@
-FROM node:24-bookworm-slim
+FROM node:20-bookworm-slim
 
 ENV NODE_ENV=production
 
@@ -6,13 +6,15 @@ WORKDIR /app
 
 # Native build tools are only needed if an npm postinstall has to compile a
 # fallback (@discordjs/opus). ca-certificates is required to download the
-# yt-dlp and ffmpeg-static binaries during `npm ci`.
+# yt-dlp and ffmpeg-static binaries during `npm ci`. The system `ffmpeg`
+# package is installed so the audio transcode binary is guaranteed present.
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       ca-certificates \
       python3 \
       make \
       g++ \
+      ffmpeg \
  && rm -rf /var/lib/apt/lists/*
 
 # npm ci runs the postinstall scripts: @distube/yt-dlp downloads the latest
