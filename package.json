@@ -1,31 +1,39 @@
 {
-  "name": "music-bot-2",
-  "version": "1.0.0",
-  "main": "src/index.js",
+  "name": "musica",
+  "version": "2.0.0",
+  "main": "src/manager.js",
   "scripts": {
+    "start": "node src/manager.js",
+    "bot": "node src/bot/index.js",
+    "register": "node src/register-commands.js",
+    "unregister": "node src/unregister-commands.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "discord",
+    "music",
+    "bot",
+    "distube"
+  ],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Discord music bot with a web management UI",
   "dependencies": {
     "@discordjs/opus": "^0.10.0",
-    "@discordjs/voice": "^0.18.0",
+    "@discordjs/voice": "^0.19.2",
     "@distube/spotify": "^2.0.2",
     "@distube/yt-dlp": "^2.0.1",
-    "axios": "^1.8.3",
-    "discord.js": "^14.18.0",
+    "discord.js": "^14.27.0",
     "distube": "^5.0.6",
     "dotenv": "^16.4.7",
+    "express": "^4.21.2",
     "ffmpeg-static": "^5.2.0",
-    "fluent-ffmpeg": "^2.1.3",
-    "googleapis": "^146.0.0",
-    "prism-media": "^1.3.5",
-    "spotify-web-api-node": "^5.0.2",
-    "youtube-search-api": "^1.2.2",
-    "youtube-sr": "^4.3.11",
-    "ytdl-core": "^4.11.5",
-    "ytdl-core-discord": "^1.3.1"
+    "opusscript": "^0.0.8",
+    "ws": "^8.18.0"
+  },
+  "allowScripts": {
+    "@discordjs/opus@0.10.0": true,
+    "@distube/yt-dlp@2.0.1": true,
+    "ffmpeg-static@5.2.0": true
   }
 }

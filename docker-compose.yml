@@ -1,0 +1,16 @@
+services:
+  musica:
+    image: ghcr.io/kirollos-nedaa/discord-music-bot:latest
+    container_name: musica
+    restart: unless-stopped
+    ports:
+      - "11234:11234"
+    env_file:
+      - .env
+    environment:
+      - HOST=0.0.0.0
+    volumes:
+      - musica-data:/app/data
+
+volumes:
+  musica-data:

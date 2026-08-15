@@ -1,65 +1,161 @@
-# 🎵 Discord Music Bot 🤖
+# Musica - Discord Music Bot
 
-A feature-rich and interactive music bot for Discord that supports YouTube links, allowing users to play, queue, shuffle, and control music playback seamlessly. Built with `discord.js` and `@discordjs/voice`.
+A Discord music bot with automatic crash-restart supervision and a web control panel. Built with `discord.js`, `DisTube`, and `yt-dlp`.
 
-## ⚠️ Disclaimer
-Currently, this bot does not support music playback. I am actively working on this feature. I would appreciate it if some one can help me with implementing the (**Spotify API**) as well as (**Youtube API**)
+## Architecture
 
-## 🚀 Features
-- **🎶 Play Music**: Supports Spotify track links and general search queries.
-- **📃 Queue System**: Adds songs to a queue and plays them in order.
-- **⏭️ Skip Tracks**: Allows users to skip to the next song in the queue.
-- **⏸️ Pause & Resume**: Pause and resume playback with interactive buttons.
-- **🔀 Shuffle**: Randomizes the order of the queued songs.
-- **🚫 Stop & Disconnect**: Stops playback and clears the queue when leaving.
-- **⏮️ Previous Track**: Navigate back to the last song played.
-- **🔁 Repeat**: Replay the current song.
-- **⏳ Auto Disconnect**: Leaves the voice channel after 30 seconds of inactivity.
-- **🖥️ Embed Display**: Display the artist and track name as well as the thumbnail of the track and the duration of the track.
+```
+src/
+  manager.js            Supervisor + web/WS management server
+  bot/
+    index.js            Discord bot process (spawned by the manager)
+    handlers.js         Slash commands + button interactions
+    state.js            Builds the player/guild state sent to the dashboard
+    embeds.js           Discord embeds and control buttons
+    extractor.js        DisTube extractor backed by the bundled yt-dlp binary
+  lib/
+    config.js           .env-driven configuration
+    logger.js           Pretty + JSON log output, parses child log lines
+    ipc.js              Message contracts between manager and bot
+  register-commands.js  Register slash commands for your guilds
+  unregister-commands.js Remove registered slash commands
+public/                 Web dashboard (static, served by the manager)
+```
 
-## 🛠️ Installation
+The **manager** runs the HTTP server + WebSocket hub, keeps the **bot** alive with exponential-backoff restarts, rotates log files, and streams live state/logs to connected dashboard clients.
 
-1. Clone the repository:
-   ```sh
-   git clone https://github.com/your-username/discord-music-bot.git
-   cd discord-music-bot
-   ```
-2. Install dependencies:
+## Features
+
+- Play via URL or search query (YouTube and 900+ sites through `yt-dlp`, plus Spotify links)
+- Queue with skip / previous / shuffle / repeat / jump / remove / clear
+- Pause, resume, stop, volume control
+- Slash commands with interactive now-playing buttons
+- Auto-leave when the voice channel is empty
+- Web dashboard: live now-playing, queue management, search-and-play, live logs
+- Supervisor: auto-restarts the bot on crash with backoff, log rotation, health endpoint
+
+## Setup
+
+1. Install dependencies (Node 18+ recommended):
    ```sh
    npm install
    ```
-3. Set up your `.env` file:
+
+2. Create `.env` from `.env.example`:
    ```env
    TOKEN=your-discord-bot-token
+   CLIENT_ID=your-bot-client-id
+   GUILD_IDS=your-server-id,your-other-server-id
+   SPOTIFY_CLIENT_ID=
+   SPOTIFY_CLIENT_SECRET=
+
+   HOST=0.0.0.0
+   PORT=3000
+   ADMIN_PASSWORD=choose-a-strong-password
    ```
-4. Start the bot:
+
+3. Register the slash commands:
    ```sh
-   nodemon index.js
+   npm run register
    ```
 
-## 🎧 Usage
+4. Start everything (manager + bot + dashboard):
+   ```sh
+   npm start
+   ```
 
-1. **Join a voice channel** in your Discord server.
-2. Use the `/play [song name or Spotify link]` command to start playing music.
-3. Control playback using buttons or commands:
-   - `/skip` - Skip to the next track.
-   - `/pause` - Pause the current track.
-   - `/resume` - Resume the paused track.
-   - `/stop` - Stop playback and disconnect.
-   - `/shuffle` - Shuffle the queue.
-   - `/repeat` - Repeat the current song.
+5. Open the dashboard at `http://localhost:3000` and sign in with `ADMIN_PASSWORD`.
 
-## 📜 Requirements
-- Node.js `v16+`
-- `discord.js v14`
-- `@discordjs/voice`
+## Commands
 
-## 🛠️ Contributing
-Contributions are welcome! Feel free to submit issues or pull requests to improve the bot.
+| Command | Description |
+| --- | --- |
+| `/play <query>` | Play a song, playlist, or search result |
+| `/pause` | Pause the current track |
+| `/resume` | Resume playback |
+| `/skip` | Skip to the next track |
+| `/stop` | Stop and disconnect |
+| `/now-playing` | Show the current track with control buttons |
 
-## 📺 Showcase
-![image](https://github.com/user-attachments/assets/d4296864-f0be-4880-b51c-32cc29c8567a)
+The now-playing message includes buttons for **repeat**, **stop**, **pause/resume**, **skip**, **shuffle**, and **previous**.
 
+## Docker (OMV or any Docker host)
 
----
-✨ Developed with passion by [Kirollos Nedaa]
+The image is published to **GHCR** (GitHub Container Registry) by a GitHub
+Actions workflow, so the server only ever pulls a prebuilt image — no Node.js
+or build step needed on the host, exactly like Jellyfin and friends. Images are
+built for both `linux/amd64` and `linux/arm64`.
+
+The image build downloads the **latest** `yt-dlp` and `ffmpeg-static` binaries
+automatically, so the stale-binary YouTube issue cannot occur.
+
+1. Make sure `.env` exists in this folder (copy from `.env.example` and fill in
+   `TOKEN`, `CLIENT_ID`, `GUILD_IDS`, `ADMIN_PASSWORD`).
+
+2. Pull and start (dashboard on host port `11234`):
+
+   ```sh
+   docker compose pull
+   docker compose up -d
+   ```
+
+3. Register the slash commands (one time only):
+
+   ```sh
+   docker compose run --rm musica node src/register-commands.js
+   ```
+
+4. Open `http://<server-ip>:11234` and sign in with `ADMIN_PASSWORD`.
+
+### Publishing a new image
+
+The image is built from the code in this GitHub repo. After any code change:
+
+1. Commit and push to `main` (or push a `v*` tag). GitHub Actions builds and
+   publishes `ghcr.io/kirollos-nedaa/discord-music-bot`.
+2. On the server, update the running container:
+
+   ```sh
+   docker compose pull && docker compose up -d
+   ```
+
+You can also trigger a rebuild manually from the **Actions** tab of the repo.
+
+### Notes
+
+- Logs persist in the named volume `musica-data` (mounted at `/app/data`).
+- To keep logs in a host folder instead, create `./data` owned by UID 1000
+  (`mkdir -p data && sudo chown -R 1000:1000 data`) and change the volume to
+  `./data:/app/data`.
+- The container runs as user `node` (UID 1000) and includes a built-in
+  healthcheck against `/healthz`.
+- If the repo is set to private, log in once on the server
+  (`docker login ghcr.io -u <your-github-username>` and use a
+  [PAT with `read:packages`](https://github.com/settings/tokens)).
+- To change the dashboard port, edit the left side of `11234:3000` in
+  `docker-compose.yml` (e.g. `8080:3000`).
+
+## Configuration
+
+| Env var | Default | Purpose |
+| --- | --- | --- |
+| `PORT` | `3000` | Dashboard/API port |
+| `HOST` | `0.0.0.0` | Bind address |
+| `ADMIN_PASSWORD` | - | Dashboard password |
+| `ADMIN_SESSION_MINUTES` | `1440` | Session TTL |
+| `MAX_QUEUE` | `250` | Max queued songs per guild |
+| `MAX_PREVIOUS_SONGS` | `50` | Max saved previous tracks |
+| `EMPTY_COOLDOWN_SECONDS` | `30` | Auto-leave delay when empty |
+| `LOG_LEVEL` | `info` | `debug` / `info` / `warn` / `error` |
+| `LOG_FILE` | `data/logs/app.log` | Log file path |
+| `LOG_MAX_BYTES` | `5MB` | Log rotation size |
+| `RESTART_BASE_DELAY_MS` | `1000` | Initial restart delay |
+| `RESTART_MAX_DELAY_MS` | `15000` | Max restart backoff |
+
+## Development
+
+Run the bot without the manager (for direct testing):
+
+```sh
+npm run bot
+```

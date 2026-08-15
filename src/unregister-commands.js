@@ -7,8 +7,15 @@ const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
     try {
         console.log('Fetching guild commands...');
 
-        // Read the guild IDs from the environment variable (comma-separated)
-        const guildIds = process.env.GUILD_IDS.split(',');
+        const guildIds = (process.env.GUILD_IDS || '')
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
+        if (guildIds.length === 0) {
+            console.error('No guild IDs configured. Set GUILD_IDS in your .env file.');
+            process.exit(1);
+        }
+        console.log(`Fetching commands from ${guildIds.length} guild(s)...`);
 
         for (const guildId of guildIds) {
             console.log(`Fetching commands from guild: ${guildId}`);

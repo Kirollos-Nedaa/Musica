@@ -26,7 +26,14 @@ const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 
 (async () => {
     try {
-        const guildIds = process.env.GUILD_IDS.split(',');
+        const guildIds = (process.env.GUILD_IDS || '')
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
+        if (guildIds.length === 0) {
+            console.error('No guild IDs configured. Set GUILD_IDS in your .env file.');
+            process.exit(1);
+        }
         console.log(`Registering commands for ${guildIds.length} guild(s)...`);
 
         for (const guildId of guildIds) {

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0e14" />
+  <title>Musica · Control panel</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231db954'/%3E%3Cpath fill='%2304140a' d='M12 4a6.5 6.5 0 1 0 6.5 6.5c0-.33-.03-.65-.07-.96A3.9 3.9 0 0 1 13.3 12a3.9 3.9 0 0 1-2.27-7.08A6.5 6.5 0 0 0 12 4Z'/%3E%3Cpath fill='%2304140a' opacity='.55' d='M15.4 3.3a4.3 4.3 0 0 0-4.9 2.7 4.3 4.3 0 0 0 6.2 3.8 4.3 4.3 0 0 0-1.3-6.5Z'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#layout">Skip to content</a>
+
+  <div id="login-screen" class="screen">
+    <form id="login-form" class="login-card">
+      <div class="login-logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="28" height="28">
+          <path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.39 5.39 0 0 1-4.4 2.26 5.4 5.4 0 0 1-3.14-9.8A9 9 0 0 0 12 3Z"/>
+          <path fill="currentColor" d="M16.8 2.6A6 6 0 0 0 10 6.4a6 6 0 0 0 8.6 5.2 6 6 0 0 0-1.8-9Z" opacity=".55"/>
+        </svg>
+      </div>
+      <h1>Musica</h1>
+      <p class="subtitle">Management console</p>
+      <label for="password">Admin password</label>
+      <input id="password" name="password" type="password" placeholder="Enter your password" autocomplete="current-password" required />
+      <button type="submit" id="login-btn">Sign in</button>
+      <p id="login-error" class="error" hidden></p>
+      <p class="login-foot">v2 · bot supervision &amp; dashboard</p>
+    </form>
+  </div>
+
+  <div id="app" class="screen" hidden>
+    <header id="topbar">
+      <div class="topbar-left">
+        <img id="bot-avatar" class="avatar" alt="bot avatar" />
+        <div class="bot-identity">
+          <span id="bot-name">Musica</span>
+          <span id="bot-tag" class="muted small"></span>
+        </div>
+      </div>
+      <div class="topbar-mid">
+        <span class="stat"><span id="bot-guilds" class="stat-value">0</span><span class="stat-label">servers</span></span>
+        <span class="stat"><span id="bot-ping" class="stat-value">-</span><span class="stat-label">ms</span></span>
+        <span class="stat"><span class="stat-label">up</span><span id="bot-uptime" class="stat-value">-</span></span>
+      </div>
+      <div class="topbar-right">
+        <span id="conn-indicator" class="conn"><i class="dot"></i><span id="conn-text">Connecting</span></span>
+        <button id="logout-btn" class="btn ghost" type="button">Log out</button>
+      </div>
+    </header>
+
+    <div id="status-strip">
+      <span id="srv-running" class="pill"></span>
+      <span id="srv-ready" class="pill"></span>
+      <span class="pill">pid <span id="srv-pid">-</span></span>
+      <span class="pill">restarts <span id="srv-restarts">0</span></span>
+      <span id="srv-lastexit" class="pill" hidden></span>
+    </div>
+
+    <div id="layout">
+      <aside id="sidebar">
+        <section class="panel">
+          <h2>Destination</h2>
+          <label for="guild-select">Server</label>
+          <select id="guild-select"></select>
+          <label for="channel-select">Voice channel</label>
+          <select id="channel-select"></select>
+        </section>
+        <section class="panel servers-panel">
+          <h2>Servers</h2>
+          <ul id="guild-list"></ul>
+        </section>
+      </aside>
+
+      <main id="main">
+        <section id="player-panel" class="panel">
+          <h2 id="player-title">Now playing</h2>
+          <div id="player">
+            <div id="np-art-wrap">
+              <img id="np-art" class="np-art" alt="album art" />
+            </div>
+            <div id="np-meta">
+              <a id="np-title" class="np-title" href="#" target="_blank" rel="noopener">Nothing playing</a>
+              <span id="np-source" class="badge"></span>
+              <span id="np-requester" class="muted small"></span>
+            </div>
+          </div>
+          <div id="progress">
+            <span id="progress-pos">0:00</span>
+            <div id="progress-bar"><div id="progress-fill"></div></div>
+            <span id="progress-dur">0:00</span>
+          </div>
+          <div id="controls">
+            <button id="btn-previous" class="icon-btn" title="Previous" type="button">
+              <svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+            </button>
+            <button id="btn-playpause" class="icon-btn big" title="Play / Pause" type="button">
+              <svg id="ic-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg>
+              <svg id="ic-pause" viewBox="0 0 24 24" hidden><path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <button id="btn-stop" class="icon-btn" title="Stop" type="button">
+              <svg viewBox="0 0 24 24"><path fill="currentColor" d="M6 6h12v12H6z"/></svg>
+            </button>
+            <button id="btn-skip" class="icon-btn" title="Skip" type="button">
+              <svg viewBox="0 0 24 24"><path fill="currentColor" d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg>
+            </button>
+            <button id="btn-shuffle" class="icon-btn" title="Shuffle" type="button">
+              <svg viewBox="0 0 24 24"><path fill="currentColor" d="M10.6 9.2 9.2 7.8 3 14l6.2 6.2 1.4-1.4L5.8 14zM21 5l-3.5 3.5 1.4 1.4L21 7.8zM14.7 4.6 13.3 6l1.4 1.4 3.5-3.5-1.4-1.4zM3 5l3.5 3.5 1.4-1.4L5.8 4.6 4.4 6 3 5zm4.7 14.7 1.4 1.4 3.5-3.5-1.4-1.4zM20.5 15.5 22 14l-6.2-6.2-1.4 1.4L17.5 16zM13 16l1.4 1.4 4.6-4.6-1.4-1.4z"/></svg>
+            </button>
+            <button id="btn-repeat" class="icon-btn" title="Repeat" type="button">
+              <svg viewBox="0 0 24 24"><path fill="currentColor" d="M7 7h10v3l4-4-4-4v3H5v6h2zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2z"/></svg>
+              <span id="repeat-badge"></span>
+            </button>
+            <div id="volume-wrap">
+              <svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a6.5 6.5 0 0 1 0 13.4v2.1a8.5 8.5 0 0 0 0-17.6z"/></svg>
+              <input id="volume" type="range" min="0" max="200" step="5" value="50" title="Volume" />
+              <span id="volume-value" class="muted small"></span>
+            </div>
+          </div>
+          <div id="empty-hint" class="muted small" hidden></div>
+        </section>
+
+        <section id="search-panel" class="panel">
+          <h2>Play a song</h2>
+          <div id="search-row">
+            <input id="search-input" type="text" placeholder="Song name or URL" autocomplete="off" />
+            <button id="search-btn" class="btn" type="button">Search</button>
+          </div>
+          <ul id="search-results" hidden></ul>
+        </section>
+
+        <section id="queue-panel" class="panel">
+          <div id="queue-head">
+            <h2>Queue</h2>
+            <button id="btn-clear" class="btn ghost small" type="button">Clear</button>
+          </div>
+          <ul id="queue-list" class="queue-list"></ul>
+          <p id="queue-empty" class="muted small" hidden>Queue is empty. Search for a song above to get started.</p>
+        </section>
+      </main>
+
+      <aside id="logs-panel" class="panel">
+        <div id="logs-head">
+          <h2>Live log</h2>
+          <label class="check"><input id="auto-scroll" type="checkbox" checked /> auto-scroll</label>
+        </div>
+        <ul id="logs"></ul>
+      </aside>
+    </div>
+  </div>
+
+  <div id="toasts" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
