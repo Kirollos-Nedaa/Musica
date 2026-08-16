@@ -7,6 +7,7 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const { DisTube, RepeatMode } = require('distube');
 const { SpotifyPlugin } = require('@distube/spotify');
 const { YouTubePlugin } = require('@distube/youtube');
+const { YtDlpPlugin } = require('@distube/yt-dlp');
 
 const config = require('../lib/config');
 const { Logger, parseLogLine } = require('../lib/logger');
@@ -18,13 +19,6 @@ const embeds = require('./embeds');
 
 const logger = new Logger({ level: config.logLevel, mode: 'json', name: 'bot' });
 const searchExtractor = new SearchExtractor();
-
-let parsedCookies;
-try {
-  parsedCookies = JSON.parse(fs.readFileSync('/app/data/cookies.json', 'utf8'));
-} catch {
-  parsedCookies = [];
-}
 
 function resolveFfmpegPath() {
   const { spawnSync } = require('child_process');
@@ -108,8 +102,9 @@ const distube = new DisTube(client, {
         clientSecret: config.spotifyClientSecret,
       },
     }),
-    new YouTubePlugin({ cookies: parsedCookies }),
+    new YouTubePlugin(),
     searchExtractor,
+    new YtDlpPlugin({ update: true }),
   ],
 });
 
