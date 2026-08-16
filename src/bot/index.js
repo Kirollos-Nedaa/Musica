@@ -4,9 +4,9 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const { Client, GatewayIntentBits } = require('discord.js');
-const { DisTube, RepeatMode } = require('distube');
+const { DisTube, RepeatMode, Song } = require('distube');
 const { SpotifyPlugin } = require('@distube/spotify');
-const { YouTubePlugin } = require('@distube/youtube');
+const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { YtDlpPlugin } = require('@distube/yt-dlp');
 
 const config = require('../lib/config');
@@ -81,6 +81,18 @@ const client = new Client({
   ],
 });
 
+const scPlugin = new SoundCloudPlugin();
+class CustomSpotifyPlugin extends SpotifyPlugin {
+  async search(query) {
+    try {
+      const results = await scPlugin.search(query, { limit: 1 });
+      return new Song(results[0]);
+    } catch (e) {
+      return null;
+    }
+  }
+}
+
 const distube = new DisTube(client, {
   emitNewSongOnly: true,
   savePreviousSongs: true,
@@ -96,13 +108,12 @@ const distube = new DisTube(client, {
     },
   },
   plugins: [
-    new SpotifyPlugin({
+    new CustomSpotifyPlugin({
       api: {
         clientId: config.spotifyClientId,
         clientSecret: config.spotifyClientSecret,
       },
     }),
-    new YouTubePlugin(),
     searchExtractor,
     new YtDlpPlugin({ update: true }),
   ],
